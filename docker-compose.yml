@@ -1,0 +1,7 @@
+version: "3.7"
+services:
+  codeclazz-staging:
+    container_name: codeclazz-staging
+    image: codeclazz-staging:latest
+    ports:
+      - 4000:3000
