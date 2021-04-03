@@ -467,9 +467,9 @@ export default function Dashboard() {
                 }}
                 style={{ fontSize: 18 }}
               />
-              {content.split("```").map((item, index) =>
+              {content.split("```").map((item, idx) =>
                 content[0] === "`" ? (
-                  index % 2 === 0 ? (
+                  idx % 2 === 0 ? (
                     <p
                       style={{
                         whiteSpace: "break-spaces",
@@ -481,11 +481,12 @@ export default function Dashboard() {
                           "Menlo, Monaco, Consolas, FibraOne-Regular, Gotham Rounded A, Gotham Rounded B, Segoe UI, Roboto, Oxygen, Ubuntu, Droid Sans, Helvetica Neue, sans-serif",
                       }}
                     >
-                      {contentWithAnswerFunc(index).map((item, index) => {
+                      {contentWithAnswerFunc(idx).map((item, index) => {
                         return (
                           <>
                             {item}
-                            {index + 1 !== contentWithAnswer.length && (
+                            {index + 1 !==
+                              contentWithAnswerFunc(idx).length && (
                               <span
                                 style={{
                                   border: "2px solid #43cbff",
@@ -503,7 +504,7 @@ export default function Dashboard() {
                   ) : (
                     <Typography>{item}</Typography>
                   )
-                ) : index % 2 === 0 ? (
+                ) : idx % 2 === 0 ? (
                   <Typography
                     style={{
                       fontSize: 18,
@@ -524,11 +525,11 @@ export default function Dashboard() {
                         "Menlo, Monaco, Consolas, FibraOne-Regular, Gotham Rounded A, Gotham Rounded B, Segoe UI, Roboto, Oxygen, Ubuntu, Droid Sans, Helvetica Neue, sans-serif",
                     }}
                   >
-                    {contentWithAnswerFunc(index).map((item, index) => {
+                    {contentWithAnswerFunc(idx).map((item, index) => {
                       return (
                         <>
                           {item}
-                          {index + 1 !== contentWithAnswer.length && (
+                          {index + 1 !== contentWithAnswerFunc(idx).length && (
                             <span
                               style={{
                                 border: "1px solid cyan",
@@ -654,6 +655,7 @@ export default function Dashboard() {
                         width: "100%",
                         marginBottom: 30,
                         fontSize: 14,
+                        lineHeight: 2.5,
                       }}
                     >
                       {String(dataContent?.content?.correction || "")
@@ -733,58 +735,309 @@ export default function Dashboard() {
           </div>
         );
       case "PUZZLE_INPUT":
+        const textingPuzzleInput = () => {
+          if (isAnswerTrue) {
+            return "Continue";
+          } else {
+            return "Try Again";
+          }
+        };
         return (
-          <>
-            <Typography>{content.split("```")?.[0] || ""}</Typography>
-            <p style={{ whiteSpace: "break-spaces" }}>
-              {contentWithAnswer.map((item, index) => {
-                return (
-                  <>
-                    {item}
-                    {index + 1 !== contentWithAnswer.length && (
-                      <span
-                        contentEditable
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              height: "80vh",
+            }}
+          >
+            <div style={{ flex: 1 }}>
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: dataContent?.content?.desc,
+                }}
+                style={{ fontSize: 18 }}
+              />
+              <p style={{ whiteSpace: "break-spaces" }}>
+                {content.split("```").map((item, idx) =>
+                  content[0] === "`" ? (
+                    idx % 2 === 0 ? (
+                      <p
                         style={{
-                          border: "1px solid #43cbff",
-                          borderRadius: 4,
-                          padding: "0px 10px",
+                          whiteSpace: "break-spaces",
+                          backgroundColor: "#2f3152",
+                          color: "#fff",
+                          fontSize: 14,
+                          padding: 10,
+                          fontFamily:
+                            "Menlo, Monaco, Consolas, FibraOne-Regular, Gotham Rounded A, Gotham Rounded B, Segoe UI, Roboto, Oxygen, Ubuntu, Droid Sans, Helvetica Neue, sans-serif",
                         }}
-                        html={answers[index] ? answers[index] : ""}
-                        onBlur={(e) => {
-                          const newVal = e.currentTarget.textContent;
-                          let newAnswers = answers ?? [""];
-                          if (index > answers.length) {
-                            newAnswers = [...answers, newVal];
-                          } else {
-                            newAnswers[index] = newVal;
-                          }
-                          console.log(newAnswers);
-                          setRenderTrigger(!renderTrigger);
-                          setAnswers(newAnswers);
-                        }}
-                      />
-                    )}
-                  </>
-                );
-              })}
-            </p>
-            <div>{activeResult ? (isAnswerTrue ? "benar" : "salah") : ""}</div>
-            {activeResult ? (
-              <Button
-                variant="contained"
-                onClick={() => {
-                  setAnswers([]);
-                  setActiveResult(false);
+                      >
+                        {contentWithAnswerFunc(idx).map((item, idx) => {
+                          return (
+                            <>
+                              {item}
+                              {idx + 1 !==
+                                contentWithAnswerFunc(idx).length && (
+                                <span
+                                  contentEditable
+                                  style={{
+                                    border: "1px solid #43cbff",
+                                    borderRadius: 4,
+                                    padding: "0px 10px",
+                                    color: "#fff !important",
+                                  }}
+                                  html={answers[index] ? answers[index] : ""}
+                                  onChange={(e) => {
+                                    const newVal = e.target.value;
+                                    let newAnswers = answers ?? [""];
+                                    if (index > answers.length) {
+                                      newAnswers = [...answers, newVal];
+                                    } else {
+                                      newAnswers[index] = newVal;
+                                    }
+                                    console.log(newAnswers);
+                                    setRenderTrigger(!renderTrigger);
+                                    setAnswers(newAnswers);
+                                  }}
+                                />
+                              )}
+                            </>
+                          );
+                        })}
+                      </p>
+                    ) : (
+                      <Typography>{item}</Typography>
+                    )
+                  ) : idx % 2 === 0 ? (
+                    <Typography
+                      style={{
+                        fontSize: 18,
+                      }}
+                    >
+                      {item}
+                    </Typography>
+                  ) : (
+                    <p
+                      style={{
+                        whiteSpace: "break-spaces",
+                        backgroundColor: "#2f3152",
+                        color: "#fff",
+                        fontSize: 18,
+                        padding: "10px 20px",
+                        borderRadius: 4,
+                        fontFamily:
+                          "Menlo, Monaco, Consolas, FibraOne-Regular, Gotham Rounded A, Gotham Rounded B, Segoe UI, Roboto, Oxygen, Ubuntu, Droid Sans, Helvetica Neue, sans-serif",
+                      }}
+                    >
+                      {contentWithAnswerFunc(idx).map((item, index) => {
+                        return (
+                          <>
+                            {item}
+                            {index + 1 !==
+                              contentWithAnswerFunc(idx).length && (
+                              <input
+                                style={{
+                                  border: "1px solid #43cbff",
+                                  borderRadius: 4,
+                                  padding: "0px 10px",
+                                  color: "#fff",
+                                  fontSize: 18,
+                                  backgroundColor: "#2f3152",
+                                  minWidth: 0,
+                                }}
+                                disabled={activeResult}
+                                value={answers[index] ? answers[index] : ""}
+                                onChange={(e) => {
+                                  const newVal = e.target.value;
+                                  let newAnswers = answers ?? [""];
+                                  if (index > answers.length) {
+                                    newAnswers = [...answers, newVal];
+                                  } else {
+                                    newAnswers[index] = newVal;
+                                  }
+                                  console.log(newAnswers);
+                                  setRenderTrigger(!renderTrigger);
+                                  setAnswers(newAnswers);
+                                }}
+                              />
+                            )}
+                          </>
+                        );
+                      })}
+                    </p>
+                  )
+                )}
+              </p>
+            </div>
+            {/* <div>
+                {activeResult ? (isAnswerTrue ? "benar" : "salah") : ""}
+              </div>
+              {activeResult ? (
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    setAnswers([]);
+                    setActiveResult(false);
+                  }}
+                >
+                  coba lagi
+                </Button>
+              ) : (
+                <Button
+                  variant="contained"
+                  onClick={() => setActiveResult(true)}
+                >
+                  test
+                </Button>
+              )} */}
+            {!activeResult ? (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  borderRadius: 4,
                 }}
               >
-                coba lagi
-              </Button>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => setActiveResult(true)}
+                  style={{
+                    borderRadius: 24,
+                    boxShadow: "0px 0px 0px #000",
+                    border: 0,
+                    letterSpacing: 2,
+                    fontSize: 16,
+                    padding: "10px 40px",
+                    fontWeight: "bold",
+                  }}
+                >
+                  Solve
+                </Button>
+              </div>
             ) : (
-              <Button variant="contained" onClick={() => setActiveResult(true)}>
-                test
-              </Button>
+              <>
+                {isAnswerTrue && (
+                  <div style={{ flex: 1 }}>
+                    <>
+                      <div
+                        style={{
+                          width: "100%",
+                          backgroundColor: "#fff",
+                          boxShadow: "0 0px 8px 0px rgb(0 0 0 / 4%)",
+                          borderRadius: 4,
+                          padding: "10px 25px",
+                          marginBottom: 50,
+                        }}
+                        dangerouslySetInnerHTML={{
+                          __html: theAnswer.join("").trim(),
+                        }}
+                      />
+                    </>
+                  </div>
+                )}
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    backgroundColor: !isAnswerTrue ? "#fff" : undefined,
+                    boxShadow: !isAnswerTrue
+                      ? "0 1px 4px 0px rgb(47 49 82 / 20%)"
+                      : undefined,
+                    borderRadius: 4,
+                    padding: !isAnswerTrue ? 25 : undefined,
+                  }}
+                >
+                  {!isAnswerTrue && (
+                    <Typography
+                      style={{
+                        flex: 1,
+                        width: "100%",
+                        marginBottom: 30,
+                        lineHeight: 2.5,
+                        fontSize: 14,
+                      }}
+                    >
+                      {String(dataContent?.content?.correction || "")
+                        .split("```")
+                        .map((item, index) => (
+                          <span
+                            style={{
+                              whiteSpace: "break-spaces",
+                              borderRadius: 3,
+                              padding:
+                                String(
+                                  dataContent?.content?.correction || ""
+                                )[0] === "`"
+                                  ? index % 2 === 0
+                                    ? 5
+                                    : undefined
+                                  : index % 2 === 0
+                                  ? undefined
+                                  : 5,
+                              backgroundColor:
+                                String(
+                                  dataContent?.content?.correction || ""
+                                )[0] === "`"
+                                  ? index % 2 === 0
+                                    ? "rgba(27,31,35,0.11)"
+                                    : undefined
+                                  : index % 2 === 0
+                                  ? undefined
+                                  : "rgba(27,31,35,0.11)",
+                            }}
+                          >
+                            {item}
+                          </span>
+                        ))}
+                    </Typography>
+                  )}
+                  {isAnswerTrue && (
+                    <>
+                      <Typography
+                        style={{
+                          fontWeight: "bold",
+                          color: "#62d76b",
+                          fontSize: 20,
+                          marginBottom: 10,
+                        }}
+                      >
+                        You are Correct!
+                      </Typography>
+                    </>
+                  )}
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => {
+                      if (isAnswerTrue) {
+                        handleNext();
+                      } else {
+                        setAnswers([]);
+                        setActiveResult(false);
+                      }
+                    }}
+                    style={{
+                      borderRadius: 24,
+                      boxShadow: "0px 0px 0px #000",
+                      border: 0,
+                      letterSpacing: 2,
+                      fontSize: 16,
+                      padding: "10px 40px",
+                      fontWeight: "bold",
+                      backgroundColor: !isAnswerTrue ? "#f44336" : undefined,
+                    }}
+                  >
+                    {textingPuzzleInput()}
+                  </Button>
+                </div>
+              </>
             )}
-          </>
+          </div>
         );
       case "CODE":
         return (
@@ -822,8 +1075,168 @@ export default function Dashboard() {
             )}
           </>
         );
+      case "ORDERING":
+        return (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              height: "80vh",
+            }}
+          >
+            <div style={{ flex: 1 }}>
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: dataContent?.content?.desc,
+                }}
+                style={{ fontSize: 18 }}
+              />
+              <p style={{ whiteSpace: "break-spaces" }}>
+                {!content.includes("```") ? (
+                  <Typography>{content}</Typography>
+                ) : (
+                  content.split("```").map((item, idx) =>
+                    content[0] === "`" ? (
+                      idx % 2 === 0 ? (
+                        <p
+                          style={{
+                            whiteSpace: "break-spaces",
+                            backgroundColor: "#2f3152",
+                            color: "#fff",
+                            fontSize: 14,
+                            padding: 10,
+                            fontFamily:
+                              "Menlo, Monaco, Consolas, FibraOne-Regular, Gotham Rounded A, Gotham Rounded B, Segoe UI, Roboto, Oxygen, Ubuntu, Droid Sans, Helvetica Neue, sans-serif",
+                          }}
+                        >
+                          {contentWithAnswerFunc(idx).map((item, idx) => {
+                            return (
+                              <>
+                                {item}
+                                {"!answer"}
+                              </>
+                            );
+                          })}
+                        </p>
+                      ) : (
+                        <Typography>{item}</Typography>
+                      )
+                    ) : idx % 2 === 0 ? (
+                      <Typography
+                        style={{
+                          fontSize: 18,
+                        }}
+                      >
+                        {item}
+                      </Typography>
+                    ) : (
+                      <p
+                        style={{
+                          whiteSpace: "break-spaces",
+                          backgroundColor: "#2f3152",
+                          color: "#fff",
+                          fontSize: 18,
+                          padding: "10px 20px",
+                          borderRadius: 4,
+                          fontFamily:
+                            "Menlo, Monaco, Consolas, FibraOne-Regular, Gotham Rounded A, Gotham Rounded B, Segoe UI, Roboto, Oxygen, Ubuntu, Droid Sans, Helvetica Neue, sans-serif",
+                        }}
+                      >
+                        {contentWithAnswerFunc(idx).map((item, index) => {
+                          return (
+                            <>
+                              {item}
+                              {"!answer"}
+                            </>
+                          );
+                        })}
+                      </p>
+                    )
+                  )
+                )}
+              </p>
+            </div>
+          </div>
+        );
       default:
-        return <div />;
+        return (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              height: "80vh",
+            }}
+          >
+            <div style={{ flex: 1 }}>
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: dataContent?.content?.desc,
+                }}
+                style={{ fontSize: 18 }}
+              />
+              <p style={{ whiteSpace: "break-spaces" }}>
+                {content.split("```").map((item, idx) =>
+                  content[0] === "`" ? (
+                    idx % 2 === 0 ? (
+                      <p
+                        style={{
+                          whiteSpace: "break-spaces",
+                          backgroundColor: "#2f3152",
+                          color: "#fff",
+                          fontSize: 14,
+                          padding: 10,
+                          fontFamily:
+                            "Menlo, Monaco, Consolas, FibraOne-Regular, Gotham Rounded A, Gotham Rounded B, Segoe UI, Roboto, Oxygen, Ubuntu, Droid Sans, Helvetica Neue, sans-serif",
+                        }}
+                      >
+                        {contentWithAnswerFunc(idx).map((item, idx) => {
+                          return (
+                            <>
+                              {item}
+                              {"!answer"}
+                            </>
+                          );
+                        })}
+                      </p>
+                    ) : (
+                      <Typography>{item}</Typography>
+                    )
+                  ) : idx % 2 === 0 ? (
+                    <Typography
+                      style={{
+                        fontSize: 18,
+                      }}
+                    >
+                      {item}
+                    </Typography>
+                  ) : (
+                    <p
+                      style={{
+                        whiteSpace: "break-spaces",
+                        backgroundColor: "#2f3152",
+                        color: "#fff",
+                        fontSize: 18,
+                        padding: "10px 20px",
+                        borderRadius: 4,
+                        fontFamily:
+                          "Menlo, Monaco, Consolas, FibraOne-Regular, Gotham Rounded A, Gotham Rounded B, Segoe UI, Roboto, Oxygen, Ubuntu, Droid Sans, Helvetica Neue, sans-serif",
+                      }}
+                    >
+                      {contentWithAnswerFunc(idx).map((item, index) => {
+                        return (
+                          <>
+                            {item}
+                            {"!answer"}
+                          </>
+                        );
+                      })}
+                    </p>
+                  )
+                )}
+              </p>
+            </div>
+          </div>
+        );
     }
   };
 
