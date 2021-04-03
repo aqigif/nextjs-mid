@@ -26,6 +26,7 @@ export const CONTENT = gql`
       timer
       instruction
       desc
+      correction
     }
   }
 `;

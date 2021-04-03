@@ -5,7 +5,8 @@ import { red } from "@material-ui/core/colors";
 const theme = createMuiTheme({
   palette: {
     primary: {
-      main: "#556cd6",
+      main: "#62d76b",
+      contrastText: "#fff",
     },
     secondary: {
       main: "#19857b",
@@ -16,6 +17,10 @@ const theme = createMuiTheme({
     background: {
       default: "#fff",
     },
+  },
+  typography: {
+    fontFamily:
+      "FibraOne-Bold, Gotham Rounded A, Gotham Rounded B, Segoe UI, Roboto, Oxygen, Ubuntu, Droid Sans, Helvetica Neue, sans-serif",
   },
 });
 
