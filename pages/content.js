@@ -202,6 +202,11 @@ export default function Dashboard() {
     }
   };
 
+  useEffect(() => {
+    if (dataContent?.content?.contentType === "CODE") {
+      setRenderTrigger(true);
+    }
+  }, [dataContent]);
   const renderContent = (type) => {
     console.log(type);
     switch (type) {
