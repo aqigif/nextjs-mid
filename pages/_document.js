@@ -14,8 +14,14 @@ export default class MyDocument extends Document {
             rel="stylesheet"
             href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
           />
-          <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
-          <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
+          {/* <script
+            src="https://unpkg.com/react@17/umd/react.development.js"
+            crossOrigin
+          ></script>
+          <script
+            src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"
+            crossOrigin
+          ></script> */}
         </Head>
         <body>
           <Main />

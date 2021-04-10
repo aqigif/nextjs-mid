@@ -1,14 +1,41 @@
 import { useMemo } from "react";
-import { ApolloClient, HttpLink, InMemoryCache } from "@apollo/client";
+import { ApolloClient, HttpLink, InMemoryCache, split } from "@apollo/client";
+import { WebSocketLink } from "@apollo/client/link/ws";
+import { getMainDefinition } from "@apollo/client/utilities";
+import { SubscriptionClient } from "subscriptions-transport-ws";
+
+// const wsLink = new SubscriptionClient("ws://dev-codeclazznfzg7.microgen.id/graphql", {
+//   reconnect: true,
+// });
+// const wsLink = new WebSocketLink({
+//   uri: "ws://dev-codeclazznfzg7.microgen.id/graphql",
+//   options: {
+//     reconnect: true,
+//   },
+// });
+
+const httpLink = new HttpLink({
+  uri: "https://dev-codeclazznfzg7.microgen.id/graphql",
+});
+
+// const splitLink = split(
+//   ({ query }) => {
+//     const definition = getMainDefinition(query);
+//     return (
+//       definition.kind === "OperationDefinition" &&
+//       definition.operation === "subscription"
+//     );
+//   },
+//   wsLink,
+//   httpLink
+// );
 
 let apolloClient;
 
 function createApolloClient() {
   return new ApolloClient({
     ssrMode: typeof window === "undefined", // set to true for SSR
-    link: new HttpLink({
-      uri: "https://dev-codeclazznfzg7.microgen.id/graphql",
-    }),
+    link: httpLink,
     cache: new InMemoryCache(),
   });
 }

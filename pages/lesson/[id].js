@@ -19,7 +19,9 @@ import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import NotificationsIcon from "@material-ui/icons/Notifications";
 import RefreshIcon from "@material-ui/icons/Refresh";
 import PlayArrowIcon from "@material-ui/icons/PlayArrow";
-import { LESSON, CONTENT } from "../gql";
+import moment from "moment";
+import Countdown from "react-countdown";
+import { LESSON, CONTENT, USER_ANSWERS, CREATE_USER_ANSWER } from "../../gql";
 import {
   Button,
   ListItem,
@@ -27,18 +29,26 @@ import {
   ListItemText,
   TextField,
 } from "@material-ui/core";
-import { useLazyQuery, useQuery } from "@apollo/client";
+import {
+  useLazyQuery,
+  useMutation,
+  useQuery,
+  useSubscription,
+} from "@apollo/client";
 import { useRouter } from "next/router";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 import CheckIcon from "@material-ui/icons/Check";
 import dynamic from "next/dynamic";
 import Editor from "@monaco-editor/react";
-import SortableComponent from "../components/sortable";
-import SortableHorComponent from "../components/sortableHorizontal";
+import SortableComponent from "../../components/sortable";
+import SortableHorComponent from "../../components/sortableHorizontal";
 import CloseIcon from "@material-ui/icons/Close";
+import Card from "@material-ui/core/Card";
+import CardActions from "@material-ui/core/CardActions";
+import CardContent from "@material-ui/core/CardContent";
 
-const Hightlighter = dynamic(() => import("../components/hightlighter"), {
+const Hightlighter = dynamic(() => import("../../components/hightlighter"), {
   ssr: false,
 });
 
@@ -98,6 +108,19 @@ const useStyles = makeStyles((theme) => ({
       duration: theme.transitions.duration.enteringScreen,
     }),
   },
+  drawerPaperRight: {
+    position: "relative",
+    whiteSpace: "nowrap",
+    width: drawerWidth,
+    backgroundColor: "transparent",
+    border: "0px solid transparent",
+    paddingTop: 44,
+  },
+  cardRoot: {
+    boxShadow: "0px 0px 0px 0px transparent",
+    marginRight: 15,
+    marginTop: 30,
+  },
   drawerPaperClose: {
     overflowX: "hidden",
     transition: theme.transitions.create("width", {
@@ -140,8 +163,9 @@ export default function Dashboard() {
   const [answer, setAnswer] = React.useState("");
   const [answers, setAnswers] = React.useState([]);
   const [answerResult, setAnswerResult] = React.useState("");
+  const [timeLeft, setTimeLeft] = React.useState(null);
   const [checkAnswer, setCheckAnswer] = React.useState(false);
-  const { contentId } = router.query;
+  const { contentId, id } = router.query;
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -151,12 +175,35 @@ export default function Dashboard() {
   };
   const fixedHeightPaper = clsx(classes.paper, classes.fixedHeight);
 
-  const { loading, error, data } = useQuery(LESSON);
+  const { loading, error, data } = useQuery(LESSON, {
+    variables: {
+      id: id,
+    },
+  });
   const [
     loadContent,
     { loading: loadingContent, error: errorContent, data: dataContent },
   ] = useLazyQuery(CONTENT);
-  const alphabets = ["A", "B", "C", "D", "E", "F", "G"];
+  const [
+    loadUserAnswers,
+    {
+      loading: loadingUserAnswers,
+      error: errorUserAnswers,
+      data: dataUserAnswers,
+    },
+  ] = useLazyQuery(USER_ANSWERS);
+  const [submitAnswer] = useMutation(CREATE_USER_ANSWER, {
+    onCompleted: () => {
+      loadUserAnswers({
+        variables: {
+          where: {
+            userId: localStorage.getItem("userId"),
+          },
+        },
+      });
+      handleNext();
+    },
+  });
 
   useEffect(() => {
     if (contentId) {
@@ -164,6 +211,13 @@ export default function Dashboard() {
       setAnswers([]);
       setActiveResult(false);
       setCheckAnswer(false);
+      loadUserAnswers({
+        variables: {
+          where: {
+            userId: localStorage.getItem("userId"),
+          },
+        },
+      });
       loadContent({
         variables: {
           id: contentId,
@@ -171,13 +225,22 @@ export default function Dashboard() {
       });
     }
   }, [contentId]);
+
+  useEffect(() => {
+    if (dataContent?.content?.timer) {
+      setTimeLeft(Date.now() + dataContent?.content?.timer * 1000);
+    } else {
+      setTimeLeft(null);
+    }
+  }, [dataContent]);
+
   const content = dataContent?.content?.content || "";
   const contents = Array.from(data?.lesson?.contents || []);
   const currContents = contents.findIndex((item) => item.id === contentId);
 
   useEffect(() => {
     if (contents.length > 0 && !contentId && !content) {
-      router.replace(`/content?contentId=${contents[0].id}`);
+      router.replace(`/lesson/${id}?contentId=${contents[0].id}`);
     }
   }, [contents]);
 
@@ -198,8 +261,75 @@ export default function Dashboard() {
 
   const handleNext = () => {
     if (contents?.[currContents + 1]?.id) {
-      router.replace(`/content?contentId=${contents?.[currContents + 1]?.id}`);
+      router.replace(
+        `/lesson/${id}?contentId=${contents?.[currContents + 1]?.id}`
+      );
     }
+  };
+
+  const currContentIds = Array.from(dataUserAnswers?.userAnswers || [])
+    .map((item) => item?.content?.id)
+    .filter((item) => item);
+
+  const handleSubmit = () => {
+    const singleAnswer = answer === dataContent?.content?.answer;
+    const answerTrue = singleAnswer || isAnswerTrue || isAnswerOrderingTrue;
+    const answered = () => {
+      switch (dataContent?.content?.contentType) {
+        case "TEXT":
+          return {
+            answer: answer,
+            correct: null,
+          };
+        case "QUIZ":
+          return {
+            answer: answer,
+            correct: singleAnswer,
+          };
+        case "ORDERING":
+          return {
+            answer: answers.join("").trim(),
+            correct: isAnswerOrderingTrue,
+          };
+        case "PUZZLE":
+          return {
+            answer: theAnswer.join("").trim(),
+            correct: isAnswerTrue,
+          };
+        case "PUZZLE_INPUT":
+          return {
+            answer: theAnswer.join("").trim(),
+            correct: isAnswerTrue,
+          };
+        case "CODE":
+          return {
+            answer: theAnswer.join("").trim(),
+            correct: isAnswerTrue,
+          };
+        default:
+          return {
+            answer: "",
+            correct: null,
+          };
+      }
+    };
+    submitAnswer({
+      variables: {
+        input: {
+          answer: answered()?.answer,
+          contentId: contentId,
+          lessonId: id,
+          userId: localStorage.getItem("userId"),
+          score: dataContent?.content?.score
+            ? answered()?.correct
+              ? dataContent?.content?.score
+              : answered()?.correct === false
+              ? 0
+              : undefined
+            : undefined,
+        },
+      },
+    });
   };
 
   useEffect(() => {
@@ -207,8 +337,18 @@ export default function Dashboard() {
       setRenderTrigger(true);
     }
   }, [dataContent]);
+
+  // const {
+  //   data: { contentAnswered },
+  // } = useSubscription(SUBSCRIPTION_USER_ANSWERS, {
+  //   variables: {
+  //     where: {
+  //       userId: localStorage.getItem("userId"),
+  //     },
+  //   },
+  // });
+  // console.log(contentAnswered);
   const renderContent = (type) => {
-    console.log(type);
     switch (type) {
       case "TEXT":
         return (
@@ -229,7 +369,7 @@ export default function Dashboard() {
               <Button
                 variant="contained"
                 color="primary"
-                onClick={handleNext}
+                onClick={handleSubmit}
                 style={{
                   borderRadius: 24,
                   boxShadow: "0px 0px 0px #000",
@@ -247,7 +387,9 @@ export default function Dashboard() {
         );
       case "QUIZ":
         const texting = () => {
-          if (checkAnswer && answer !== dataContent?.content?.answer) {
+          if (currContentIds.includes(contentId)) {
+            return "Continue";
+          } else if (checkAnswer && answer !== dataContent?.content?.answer) {
             return "Try Again";
           } else if (checkAnswer && answer === dataContent?.content?.answer) {
             return "Continue";
@@ -436,7 +578,7 @@ export default function Dashboard() {
                         checkAnswer &&
                         answer === dataContent?.content?.answer
                       ) {
-                        handleNext();
+                        handleSubmit();
                       } else {
                         setCheckAnswer(true);
                       }
@@ -554,7 +696,10 @@ export default function Dashboard() {
                               contentWithAnswerFunc(idx).length && (
                               <span
                                 style={{
-                                  border: "1px solid cyan",
+                                  border:
+                                    answers.length === index
+                                      ? "1px solid #E0FFFF"
+                                      : "1px solid cyan",
                                   padding: "0px 10px",
                                   borderRadius: 4,
                                 }}
@@ -734,7 +879,7 @@ export default function Dashboard() {
                     color="primary"
                     onClick={() => {
                       if (isAnswerTrue) {
-                        handleNext();
+                        handleSubmit();
                       } else {
                         setAnswers([]);
                       }
@@ -804,17 +949,29 @@ export default function Dashboard() {
                                 {item}
                                 {idx + 1 !==
                                   contentWithAnswerFunc(idx).length && (
-                                  <span
-                                    contentEditable
+                                  <input
                                     style={{
                                       border: "1px solid #43cbff",
                                       borderRadius: 4,
                                       padding: "0px 10px",
-                                      color: "#fff !important",
+                                      color: "#fff",
+                                      fontSize: 18,
+                                      backgroundColor: "#2f3152",
+                                      minWidth: 0,
                                     }}
-                                    html={answers[index] ? answers[index] : ""}
+                                    disabled={activeResult}
+                                    autoFocus={index === 0}
+                                    value={answers[index] ? answers[index] : ""}
                                     onChange={(e) => {
-                                      r;
+                                      const newVal = e.target.value;
+                                      let newAnswers = answers ?? [""];
+                                      if (index > answers.length) {
+                                        newAnswers = [...answers, newVal];
+                                      } else {
+                                        newAnswers[index] = newVal;
+                                      }
+                                      setRenderTrigger(!renderTrigger);
+                                      setAnswers(newAnswers);
                                     }}
                                   />
                                 )}
@@ -863,6 +1020,7 @@ export default function Dashboard() {
                                     minWidth: 0,
                                   }}
                                   disabled={activeResult}
+                                  autoFocus={index === 0}
                                   value={answers[index] ? answers[index] : ""}
                                   onChange={(e) => {
                                     const newVal = e.target.value;
@@ -872,7 +1030,6 @@ export default function Dashboard() {
                                     } else {
                                       newAnswers[index] = newVal;
                                     }
-                                    console.log(newAnswers);
                                     setRenderTrigger(!renderTrigger);
                                     setAnswers(newAnswers);
                                   }}
@@ -1033,7 +1190,7 @@ export default function Dashboard() {
                     color="primary"
                     onClick={() => {
                       if (isAnswerTrue) {
-                        handleNext();
+                        handleSubmit();
                       } else {
                         setAnswers([]);
                         setActiveResult(false);
@@ -1058,7 +1215,6 @@ export default function Dashboard() {
           </div>
         );
       case "CODE":
-        console.log(answerResult);
         return (
           <div style={{ display: "flex" }}>
             <div style={{ flex: 1 }}>
@@ -1441,7 +1597,7 @@ export default function Dashboard() {
                     color="primary"
                     onClick={() => {
                       if (isAnswerOrderingTrue) {
-                        handleNext();
+                        handleSubmit();
                       } else {
                         setAnswers([]);
                         setActiveResult(false);
@@ -1472,7 +1628,6 @@ export default function Dashboard() {
           return "Continue";
         };
         const isFinish = answers.filter((item) => item.includes("DONE"));
-        console.log(isFinish, answers);
         return (
           <div
             style={{
@@ -1572,7 +1727,7 @@ export default function Dashboard() {
                     color="primary"
                     onClick={() => {
                       if (isAnswerOrderingTrue) {
-                        handleNext();
+                        handleSubmit();
                       } else {
                         setAnswers([]);
                         setActiveResult(false);
@@ -1703,7 +1858,7 @@ export default function Dashboard() {
                 button
                 selected={item?.id === contentId}
                 onClick={() => {
-                  router.replace(`/content?contentId=${item?.id}`);
+                  router.replace(`/lesson/${id}?contentId=${item?.id}`);
                   setOpenSide(false);
                   loadContent({
                     variables: {
@@ -1716,7 +1871,7 @@ export default function Dashboard() {
                   {index + 1}
                 </ListItemIcon>
                 <ListItemText primary={item?.name} />
-                {currContents > index && (
+                {currContentIds.includes(item.id) && (
                   <CheckCircleIcon style={{ color: "#4caf50" }} />
                 )}
               </ListItem>
@@ -1811,7 +1966,7 @@ export default function Dashboard() {
                     button
                     selected={item?.id === contentId}
                     onClick={() => {
-                      router.replace(`/content?contentId=${item?.id}`);
+                      router.replace(`/lesson/${id}?contentId=${item?.id}`);
                       loadContent({
                         variables: {
                           id: item?.id,
@@ -1823,7 +1978,7 @@ export default function Dashboard() {
                       {index + 1}
                     </ListItemIcon>
                     <ListItemText primary={item?.name} />
-                    {currContents > index && (
+                    {currContentIds.includes(item.id) && (
                       <CheckCircleIcon style={{ color: "#4caf50" }} />
                     )}
                   </ListItem>
@@ -1854,6 +2009,47 @@ export default function Dashboard() {
           </Grid>
         </Container>
       </main>
+      <Drawer
+        anchor={"right"}
+        variant="permanent"
+        classes={{
+          paper: clsx(classes.drawerPaperRight),
+        }}
+        open
+      >
+        <div className={classes.toolbarIcon} />
+        {timeLeft && (
+          <Card className={classes.cardRoot}>
+            <CardContent>
+              <Typography color="textSecondary" gutterBottom>
+                Time Left
+              </Typography>
+              <Countdown
+                date={timeLeft}
+                onComplete={handleSubmit}
+                renderer={({ hours, minutes, seconds, completed }) => (
+                  <span>
+                    {hours}:{minutes}:{seconds}
+                  </span>
+                )}
+              />
+            </CardContent>
+          </Card>
+        )}
+        <Card className={classes.cardRoot}>
+          <CardContent>
+            <Typography color="textSecondary" gutterBottom>
+              Additional information
+            </Typography>
+            <div
+              dangerouslySetInnerHTML={{
+                __html: dataContent?.content?.instruction,
+              }}
+              style={{ fontSize: 14, flex: 1 }}
+            />
+          </CardContent>
+        </Card>
+      </Drawer>
     </div>
   );
 }

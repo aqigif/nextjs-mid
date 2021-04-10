@@ -7,6 +7,7 @@ import theme from "../styles/theme";
 import "../styles/globals.css";
 import { useApollo } from "../libs/apolloClient";
 import { ApolloProvider } from "@apollo/client";
+import { SnackbarProvider } from "notistack";
 
 export default function MyApp(props) {
   const { Component, pageProps } = props;
@@ -23,7 +24,7 @@ export default function MyApp(props) {
   return (
     <React.Fragment>
       <Head>
-        <title>My page</title>
+        <title>codeclazz</title>
         <meta
           name="viewport"
           content="minimum-scale=1, initial-scale=1, width=device-width"
@@ -33,7 +34,16 @@ export default function MyApp(props) {
         <ThemeProvider theme={theme}>
           {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
           <CssBaseline />
-          <Component {...pageProps} />
+          <SnackbarProvider
+            autoHideDuration={3000}
+            anchorOrigin={{
+              vertical: "bottom",
+              horizontal: "right",
+            }}
+            maxSnack={3}
+          >
+            <Component {...pageProps} />
+          </SnackbarProvider>
         </ThemeProvider>
       </ApolloProvider>
     </React.Fragment>
