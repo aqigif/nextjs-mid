@@ -63,7 +63,7 @@ export default function SignIn() {
       const dataLogin = data?.login;
       localStorage.setItem("token", dataLogin?.token);
       localStorage.setItem("userId", dataLogin?.user?.id);
-      router.replace("/");
+      router.replace("/lesson");
     },
     onError: () => {
       notifError("Something went wrong");
