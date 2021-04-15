@@ -18,7 +18,7 @@ const theme = createMuiTheme({
   },
   typography: {
     fontFamily:
-      "FibraOne-Bold, Gotham Rounded A, Gotham Rounded B, Segoe UI, Roboto, Oxygen, Ubuntu, Droid Sans, Helvetica Neue, sans-serif",
+      "FibraOne-Bold, Gotham Rounded A, Gotham Rounded B, Segoe UI, Roboto, Oxygen, Ubuntu, Droid Sans, Helvetica Neue, sans-serif, Poppins",
   },
 });
 
