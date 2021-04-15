@@ -1,123 +1,187 @@
 import React from "react";
+import { makeStyles } from "@material-ui/core/styles";
 import AppBar from "@material-ui/core/AppBar";
-import Button from "@material-ui/core/Button";
-import CameraIcon from "@material-ui/icons/PhotoCamera";
-import Card from "@material-ui/core/Card";
-import CardActions from "@material-ui/core/CardActions";
-import CardContent from "@material-ui/core/CardContent";
-import CardMedia from "@material-ui/core/CardMedia";
-import CssBaseline from "@material-ui/core/CssBaseline";
-import Grid from "@material-ui/core/Grid";
 import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
-import { makeStyles } from "@material-ui/core/styles";
-import Container from "@material-ui/core/Container";
-import Link from "@material-ui/core/Link";
-import NLink from "next/link";
-import { LESSONS } from "../gql";
-import { useQuery } from "@apollo/client";
-import { LinearProgress } from "@material-ui/core";
+import Button from "@material-ui/core/Button";
+import Grid from "@material-ui/core/Grid";
 
-function Copyright() {
-  return (
-    <Typography variant="body2" color="textSecondary" align="center">
-      {"Copyright © "}
-      <Link color="inherit" href="https://material-ui.com/">
-        CodeClazz
-      </Link>{" "}
-      {new Date().getFullYear()}
-      {"."}
-    </Typography>
-  );
-}
+import Hero from "components/landing/Hero";
+import { Logo } from "public/icon/icon";
+import Code from "components/landing/Code";
+import CardLanding from "components/landing/CardLanding";
+import Feature from "components/landing/Feature";
+import TopFooter from "components/landing/TopFooter";
+import Footer from "components/landing/Footer";
+import { useRouter } from "next/router";
 
 const useStyles = makeStyles((theme) => ({
-  icon: {
-    marginRight: theme.spacing(2),
+  root: {
+    // flexGrow: 1,
+    background: "#FAFBFC",
   },
-  heroContent: {
-    backgroundColor: theme.palette.background.paper,
-    padding: theme.spacing(8, 0, 6),
+  appBar: {
+    background: "#FAFBFC",
+    color: "black",
+    zIndex: 999,
+    padding: "0 200px",
+    boxShadow: "none",
   },
-  heroButtons: {
-    marginTop: theme.spacing(4),
+  buttonApp: {
+    textTransform: "none",
+    fontSize: 14,
+    fontWeight: 500,
+    fontFamily: "Poppins",
+    "&:hover": {
+      background: "transparent",
+      boxShadow: "none",
+    },
   },
-  cardGrid: {
-    paddingTop: theme.spacing(8),
-    paddingBottom: theme.spacing(8),
+  button: {
+    textTransform: "none",
+    fontSize: 14,
+    borderRadius: 8,
+    fontWeight: "bold",
+    fontFamily: "Poppins",
+    color: "#7C51FF",
+    border: "1px solid #7C51FF",
+    "&:hover": {
+      background: "transparent",
+      boxShadow: "none",
+    },
   },
-  card: {
-    display: "flex",
-    cursor: "pointer",
+  buttonCoba: {
+    marginLeft: 10,
+    textTransform: "none",
+    fontSize: 14,
+    borderRadius: 8,
+    fontWeight: "bold",
+    fontFamily: "Poppins",
+    background: "#7C51FF",
+    boxShadow: "none",
+    color: "#fff",
+    "&:hover": {
+      background: "#7C51FF",
+      color: "#fff",
+      boxShadow: "none",
+    },
   },
-  cardMedia: {
-    height: 100,
-    width: 100,
-  },
-  cardContent: {},
-  footer: {
-    backgroundColor: theme.palette.background.paper,
-    padding: theme.spacing(6),
+
+  logo: {
+    fontSize: "3.5rem",
   },
 }));
 
-const cards = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-
-export default function Album() {
+function index() {
   const classes = useStyles();
-  const { loading, error, data } = useQuery(LESSONS);
+  const router = useRouter();
 
   return (
-    <React.Fragment>
-      <CssBaseline />
-      <AppBar position="relative">
-        <Toolbar>
-          <Typography variant="h6" color="inherit" noWrap>
-            Code Clazz
-          </Typography>
-        </Toolbar>
-      </AppBar>
-      <main>
-        <Container className={classes.cardGrid} maxWidth="lg">
-          {/* End hero unit */}
-          <Grid container spacing={4}>
-            {Array.from(data?.lessonsConnection?.data || []).map((lesson) => {
-              const currContent = Array.from(lesson?.userAnswers || []).length;
-              const totalContent = Array.from(lesson?.contents || []).length;
-              return (
-                <Grid item key={lesson?.id} xs={12} sm={6} md={4}>
-                  <NLink href={`/lesson/${lesson?.id}`}>
-                    <Card className={classes.card}>
-                      <img
-                        className={classes.cardMedia}
-                        src={lesson?.thumbnail}
-                        alt="Image title"
-                      />
-                      <CardContent className={classes.cardContent}>
-                        <Typography gutterBottom variant="h6" component="h6">
-                          {lesson?.name}
-                        </Typography>
-                        <Typography gutterBottom variant="caption">
-                          {currContent} dari {totalContent} Selesai
-                        </Typography>
-                        <LinearProgress
-                          variant="determinate"
-                          value={(currContent * 100) / totalContent}
-                        />
-                      </CardContent>
-                    </Card>
-                  </NLink>
+    <>
+      <div className={classes.root}>
+        <AppBar position="fixed" className={classes.appBar}>
+          <Toolbar>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                width: "100%",
+                height: 72,
+              }}
+            >
+              <Grid container justify="space-between" alignItems="center">
+                <Grid item>
+                  <Logo className={classes.logo} />
                 </Grid>
-              );
-            })}
-          </Grid>
-        </Container>
-      </main>
-      {/* Footer */}
-      <footer className={classes.footer}>
-        <Copyright />
-      </footer>
-      {/* End footer */}
-    </React.Fragment>
+                <Grid item>
+                  <Button className={classes.buttonApp}>Beranda</Button>
+                  <Button className={classes.buttonApp}>Daftar Kelas</Button>
+                  <Button className={classes.buttonApp}>Fitur</Button>
+                  <Button className={classes.buttonApp}>Kurikulum</Button>
+                </Grid>
+                <Grid item>
+                  <Button
+                    variant="outlined"
+                    className={classes.button}
+                    onClick={() => router.push("signin")}
+                  >
+                    Masuk
+                  </Button>
+                  <Button
+                    variant="contained"
+                    className={classes.buttonCoba}
+                    onClick={() => router.push("signin")}
+                  >
+                    Coba Gratis
+                  </Button>
+                </Grid>
+              </Grid>
+            </div>
+          </Toolbar>
+        </AppBar>
+      </div>
+
+      <div style={{ paddingTop: 80, background: "#FAFBFC" }}>
+        <div style={{ margin: "8px 20px 44px" }}>
+          <Hero />
+        </div>
+
+        <div
+          style={{
+            width: "100%",
+            marginBottom: 40,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            // padding: "0 326px",
+          }}
+        >
+          <Code />
+        </div>
+
+        <div
+          style={{
+            margin: "0 200px 116px",
+          }}
+        >
+          <CardLanding />
+        </div>
+
+        <div>
+          <img src="/asus.pro.svg" alt="away" style={{ width: "100%" }} />
+        </div>
+
+        <div
+          style={{
+            margin: "100px 200px 116px",
+          }}
+        >
+          <Feature />
+        </div>
+
+        <div
+          style={{
+            width: "100%",
+            height: 379,
+            padding: 20,
+          }}
+        >
+          <TopFooter />
+        </div>
+        <div
+          style={{
+            width: "100%",
+            height: 256,
+            background: "#080522",
+            //   margin: "0 260px 32px ",
+          }}
+        >
+          <Footer />
+        </div>
+      </div>
+    </>
   );
 }
+
+export default index;
