@@ -92,7 +92,11 @@ export default function Album() {
           {/* End hero unit */}
           <Grid container spacing={4}>
             {Array.from(data?.lessonsConnection?.data || []).map((lesson) => {
-              const currContent = Array.from(lesson?.userAnswers || []).length;
+              const currContent =
+                Array.from(lesson?.userAnswers || []).length >
+                Array.from(lesson?.contents || []).length
+                  ? Array.from(lesson?.contents || []).length
+                  : Array.from(lesson?.userAnswers || []).length;
               const totalContent = Array.from(lesson?.contents || []).length;
               return (
                 <Grid item key={lesson?.id} xs={12} sm={6} md={4}>
