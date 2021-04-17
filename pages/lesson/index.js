@@ -80,11 +80,29 @@ export default function Album() {
   return (
     <React.Fragment>
       <CssBaseline />
-      <AppBar position="relative">
+      <AppBar
+        position="relative"
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          flexDirection: "row",
+        }}
+      >
         <Toolbar>
           <Typography variant="h6" color="inherit" noWrap>
             Code Clazz
           </Typography>
+        </Toolbar>
+        <Toolbar>
+          <NLink href="/signin">
+            <Button
+              inherit
+              noWrap
+              style={{ textTransform: "none", color: "#fff" }}
+            >
+              Logout
+            </Button>
+          </NLink>
         </Toolbar>
       </AppBar>
       <main>
@@ -92,11 +110,13 @@ export default function Album() {
           {/* End hero unit */}
           <Grid container spacing={4}>
             {Array.from(data?.lessonsConnection?.data || []).map((lesson) => {
-              const currContent =
-                Array.from(lesson?.userAnswers || []).length >
-                Array.from(lesson?.contents || []).length
-                  ? Array.from(lesson?.contents || []).length
-                  : Array.from(lesson?.userAnswers || []).length;
+              const currContent = Array.from(lesson?.userAnswers || []).filter(
+                (item) =>
+                  Array.from(lesson?.contents || [])
+                    .map((itm) => itm.id)
+                    .includes(item.content.id)
+              ).length;
+
               const totalContent = Array.from(lesson?.contents || []).length;
               return (
                 <Grid item key={lesson?.id} xs={12} sm={6} md={4}>

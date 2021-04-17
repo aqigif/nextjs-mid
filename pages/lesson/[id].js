@@ -298,16 +298,19 @@ export default function Dashboard() {
     const answeredContents = contents.filter((item) =>
       currContentIds.includes(item.id)
     ).length;
-    if (
-      (!contents?.[currContents + 1]?.id &&
-        parseInt(answeredContents + 1) === contents.length) ||
-      answeredContents === contents.length
-    ) {
-      setFinish(true);
-    }
-    if (!retry) {
-      if (answeredContents === contents.length) {
-        setFinishScreen(true);
+    const contentLength = contents.length;
+    if (contentLength > 0) {
+      if (
+        (!contents?.[currContents + 1]?.id &&
+          parseInt(answeredContents + 1) === contentLength) ||
+        answeredContents === contentLength
+      ) {
+        setFinish(true);
+      }
+      if (!retry) {
+        if (answeredContents === contentLength) {
+          setFinishScreen(true);
+        }
       }
     }
   }, [contents, currContentIds]);
