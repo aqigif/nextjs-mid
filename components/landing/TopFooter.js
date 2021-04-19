@@ -7,6 +7,8 @@ const useStyles = makeStyles((theme) => ({
   container: {
     height: " 100%",
     backgroundColor: "#7C51FF",
+    background: "url(/FrameHero2.svg)",
+    backgroundRepeat: "no-repeat",
     borderRadius: 16,
     display: "flex",
     alignItems: "center",
