@@ -13,6 +13,8 @@ const useStyles = makeStyles((theme) => ({
     height: 760,
     backgroundColor: "#7C51FF",
     borderRadius: 16,
+    background: "url(/FrameHero.svg)",
+    backgroundRepeat: "no-repeat",
   },
   gridConntainer: {
     padding: "72px 180px 43px",
