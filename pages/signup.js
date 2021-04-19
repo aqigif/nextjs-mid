@@ -12,6 +12,12 @@ import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
 import Container from "@material-ui/core/Container";
+import { useFormik } from "formik";
+import { useRouter } from "next/router";
+import cookie from "cookie";
+
+import useAuth from "hooks/useAuth";
+import useNotif from "hooks/useNotif";
 
 function Copyright() {
   return (
@@ -48,6 +54,60 @@ const useStyles = makeStyles((theme) => ({
 
 export default function SignUp() {
   const classes = useStyles();
+  const router = useRouter();
+
+  const { signUp } = useAuth();
+  const { notifSuccess } = useNotif();
+
+  const validate = (values) => {
+    const errors = {};
+    if (values.email) {
+      const re = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
+      if (!re.test(values.email) && values.email) {
+        errors.email = "Please enter a valid Email address";
+      }
+    }
+    if (!values.password) {
+      errors.password = "Password can't be empty";
+    }
+    if (!values.firstName) {
+      errors.password = "Fullname can't be empty";
+    }
+    return errors;
+  };
+
+  const formik = useFormik({
+    initialValues: {
+      firstName: "",
+      email: "",
+      password: "",
+    },
+    validate: validate,
+    onSubmit: (values) => {
+      handleSignup(values);
+    },
+  });
+
+  const handleSignup = (value) => {
+    signUp({
+      variables: {
+        input: value,
+      },
+    })
+      .then((res) => {
+        const token = res.data.register.token;
+        document.cookie = cookie.serialize("token", token, {
+          sameSite: true,
+          path: "/",
+          maxAge: 30 * 24 * 60 * 60, // 30 days
+        });
+        notifSuccess("register success");
+        router.replace("/class");
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
 
   return (
     <Container component="main" maxWidth="xs">
@@ -59,36 +119,40 @@ export default function SignUp() {
         <Typography component="h1" variant="h5">
           Sign up
         </Typography>
-        <form className={classes.form} noValidate>
+        <form
+          onSubmit={formik.handleSubmit}
+          className={classes.form}
+          noValidate
+        >
           <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
+            <Grid item xs={12} sm={12}>
               <TextField
+                error={formik.errors.firstName}
+                id="outlined-error-helper-text"
                 autoComplete="fname"
                 name="firstName"
                 variant="outlined"
+                value={formik.values.firstName}
+                onChange={formik.handleChange}
+                helperText={formik.errors.firstName}
                 required
                 fullWidth
                 id="firstName"
-                label="First Name"
+                label="Full Name"
                 autoFocus
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                variant="outlined"
-                required
-                fullWidth
-                id="lastName"
-                label="Last Name"
-                name="lastName"
-                autoComplete="lname"
-              />
-            </Grid>
+
             <Grid item xs={12}>
               <TextField
+                error={formik.errors.email}
+                id="outlined-error-helper-text"
                 variant="outlined"
                 required
                 fullWidth
+                value={formik.values.email}
+                onChange={formik.handleChange}
+                helperText={formik.errors.email}
                 id="email"
                 label="Email Address"
                 name="email"
@@ -97,9 +161,14 @@ export default function SignUp() {
             </Grid>
             <Grid item xs={12}>
               <TextField
+                error={formik.errors.password}
+                id="outlined-error-helper-text"
                 variant="outlined"
                 required
                 fullWidth
+                value={formik.values.password}
+                onChange={formik.handleChange}
+                helperText={formik.errors.password}
                 name="password"
                 label="Password"
                 type="password"
@@ -125,7 +194,7 @@ export default function SignUp() {
           </Button>
           <Grid container justify="flex-end">
             <Grid item>
-              <Link href="#" variant="body2">
+              <Link href="/signin" variant="body2">
                 Already have an account? Sign in
               </Link>
             </Grid>

@@ -16,6 +16,7 @@ import { useMutation } from "@apollo/client";
 import { LOGIN } from "../gql";
 import useNotif from "../libs/useNotif";
 import { useRouter } from "next/router";
+import cookie from "cookie";
 
 function Copyright() {
   return (
@@ -63,7 +64,12 @@ export default function SignIn() {
       const dataLogin = data?.login;
       localStorage.setItem("token", dataLogin?.token);
       localStorage.setItem("userId", dataLogin?.user?.id);
-      router.replace("/lesson");
+      document.cookie = cookie.serialize("token", dataLogin?.token, {
+        sameSite: true,
+        path: "/",
+        maxAge: 30 * 24 * 60 * 60, // 30 days
+      });
+      router.replace("/class");
     },
     onError: () => {
       notifError("Something went wrong");
@@ -152,7 +158,7 @@ export default function SignIn() {
               </Link>
             </Grid>
             <Grid item>
-              <Link href="#" variant="body2">
+              <Link href="/signup" variant="body2">
                 {"Don't have an account? Sign Up"}
               </Link>
             </Grid>
