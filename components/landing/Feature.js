@@ -129,8 +129,7 @@ function Feature() {
               </Typography>
               <Typography className={classes.subTitle}>
                 Konsep pembelajaran disusun seinteraktif mungkin agar anak Anda
-                nyaman dalam belajar serta dapat langsung mempraktekannya. [OJO
-                LALI KARAKTER]
+                nyaman dalam belajar serta dapat langsung mempraktekannya.
               </Typography>
             </div>
           </div>
@@ -158,7 +157,6 @@ function Feature() {
               <Typography className={classes.subTitle}>
                 Projek yang kami berikan memiliki bobot sesuai dengan dunia
                 kerja, supaya anak Anda dapat memahami profesi IT sejak dini.
-                [TAMBAH STUDY CASE]
               </Typography>
             </div>
             <img
