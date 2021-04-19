@@ -463,7 +463,7 @@ export default function Dashboard() {
                 />
 
                 {!content.includes("```") ? (
-                  <Typography>adssa{content}</Typography>
+                  <Typography>{content}</Typography>
                 ) : (
                   content.split("```").map((item, idx) =>
                     content[0] === "`" ? (
