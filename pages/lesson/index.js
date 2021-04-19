@@ -131,7 +131,7 @@ export default function Album() {
   const { getPaths } = usePaths();
 
   return (
-    <div style={{ background: "#FAFBFC", height: "100vh" }}>
+    <div style={{ background: "#FAFBFC" }}>
       <CssBaseline />
       <AppBar position="relative" className={classes.appBar}>
         <Toolbar>
@@ -155,6 +155,17 @@ export default function Album() {
             </Grid>
           </div>
         </Toolbar>
+        {/* <Toolbar>
+          <NLink href="/signin">
+            <Button
+              inherit
+              noWrap
+              style={{ textTransform: "none", color: "#fff" }}
+            >
+              Logout
+            </Button>
+          </NLink>
+        </Toolbar> */}
       </AppBar>
       {/* <main style={{ background: "#FAFBFC" }}> */}
       <Container maxWidth="md">
@@ -167,7 +178,13 @@ export default function Album() {
       {/* <Container className={classes.cardGrid} maxWidth="lg">
           <Grid container spacing={4}>
             {Array.from(data?.lessonsConnection?.data || []).map((lesson) => {
-              const currContent = Array.from(lesson?.userAnswers || []).length;
+              const currContent = Array.from(lesson?.userAnswers || []).filter(
+                (item) =>
+                  Array.from(lesson?.contents || [])
+                    .map((itm) => itm.id)
+                    .includes(item.content.id)
+              ).length;
+
               const totalContent = Array.from(lesson?.contents || []).length;
               return (
                 <Grid item key={lesson?.id} xs={12} sm={6} md={4}>

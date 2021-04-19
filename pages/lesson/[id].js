@@ -151,6 +151,13 @@ const useStyles = makeStyles((theme) => ({
   fixedHeight: {
     height: 240,
   },
+
+  paperSuccess: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+  },
 }));
 
 export default function Dashboard() {
@@ -165,6 +172,9 @@ export default function Dashboard() {
   const [answerResult, setAnswerResult] = React.useState("");
   const [timeLeft, setTimeLeft] = React.useState(null);
   const [checkAnswer, setCheckAnswer] = React.useState(false);
+  const [finish, setFinish] = React.useState(false);
+  const [finishScreen, setFinishScreen] = React.useState(false);
+  const [retry, setRetry] = React.useState(false);
   const { contentId, id } = router.query;
 
   const handleDrawerOpen = () => {
@@ -175,11 +185,7 @@ export default function Dashboard() {
   };
   const fixedHeightPaper = clsx(classes.paper, classes.fixedHeight);
 
-  const { loading, error, data } = useQuery(LESSON, {
-    variables: {
-      id: id,
-    },
-  });
+  const [loadLesson, { loading, error, data }] = useLazyQuery(LESSON, {});
   const [
     loadContent,
     { loading: loadingContent, error: errorContent, data: dataContent },
@@ -191,19 +197,32 @@ export default function Dashboard() {
       error: errorUserAnswers,
       data: dataUserAnswers,
     },
-  ] = useLazyQuery(USER_ANSWERS);
+  ] = useLazyQuery(USER_ANSWERS, {
+    fetchPolicy: "network-only",
+  });
   const [submitAnswer] = useMutation(CREATE_USER_ANSWER, {
-    onCompleted: () => {
+    onCompleted: (data) => {
       loadUserAnswers({
         variables: {
           where: {
             userId: localStorage.getItem("userId"),
+            lessonId: id,
           },
         },
       });
       handleNext();
     },
   });
+
+  useEffect(() => {
+    if (id) {
+      loadLesson({
+        variables: {
+          id: id,
+        },
+      });
+    }
+  }, [id]);
 
   useEffect(() => {
     if (contentId) {
@@ -215,6 +234,7 @@ export default function Dashboard() {
         variables: {
           where: {
             userId: localStorage.getItem("userId"),
+            lessonId: id,
           },
         },
       });
@@ -264,12 +284,36 @@ export default function Dashboard() {
       router.replace(
         `/lesson/${id}?contentId=${contents?.[currContents + 1]?.id}`
       );
+    } else {
+      setFinishScreen(true);
+      setRetry(false);
     }
   };
 
   const currContentIds = Array.from(dataUserAnswers?.userAnswers || [])
     .map((item) => item?.content?.id)
     .filter((item) => item);
+
+  useEffect(() => {
+    const answeredContents = contents.filter((item) =>
+      currContentIds.includes(item.id)
+    ).length;
+    const contentLength = contents.length;
+    if (contentLength > 0) {
+      if (
+        (!contents?.[currContents + 1]?.id &&
+          parseInt(answeredContents + 1) === contentLength) ||
+        answeredContents === contentLength
+      ) {
+        setFinish(true);
+      }
+      if (!retry) {
+        if (answeredContents === contentLength) {
+          setFinishScreen(true);
+        }
+      }
+    }
+  }, [contents, currContentIds]);
 
   const handleSubmit = () => {
     const singleAnswer = answer === dataContent?.content?.answer;
@@ -313,23 +357,27 @@ export default function Dashboard() {
           };
       }
     };
-    submitAnswer({
-      variables: {
-        input: {
-          answer: answered()?.answer,
-          contentId: contentId,
-          lessonId: id,
-          userId: localStorage.getItem("userId"),
-          score: dataContent?.content?.score
-            ? answered()?.correct
-              ? dataContent?.content?.score
-              : answered()?.correct === false
-              ? 0
-              : undefined
-            : undefined,
+    if (!retry) {
+      submitAnswer({
+        variables: {
+          input: {
+            answer: answered()?.answer,
+            contentId: contentId,
+            lessonId: id,
+            userId: localStorage.getItem("userId"),
+            score: dataContent?.content?.score
+              ? answered()?.correct
+                ? dataContent?.content?.score
+                : answered()?.correct === false
+                ? 0
+                : undefined
+              : undefined,
+          },
         },
-      },
-    });
+      });
+    } else {
+      handleNext();
+    }
   };
 
   useEffect(() => {
@@ -380,7 +428,7 @@ export default function Dashboard() {
                   fontWeight: "bold",
                 }}
               >
-                Continue
+                {finish ? "Finish" : "Continue"}
               </Button>
             </div>
           </div>
@@ -413,9 +461,91 @@ export default function Dashboard() {
                   }}
                   style={{ fontSize: 18 }}
                 />
-                <Typography style={{ fontSize: 18 }}>
-                  {dataContent?.content?.content}
-                </Typography>
+
+                {!content.includes("```") ? (
+                  <Typography>adssa{content}</Typography>
+                ) : (
+                  content.split("```").map((item, idx) =>
+                    content[0] === "`" ? (
+                      idx % 2 === 0 ? (
+                        <p
+                          style={{
+                            whiteSpace: "break-spaces",
+                            backgroundColor: "#2f3152",
+                            color: "#fff",
+                            fontSize: 14,
+                            padding: 10,
+                            fontFamily:
+                              "Menlo, Monaco, Consolas, FibraOne-Regular, Gotham Rounded A, Gotham Rounded B, Segoe UI, Roboto, Oxygen, Ubuntu, Droid Sans, Helvetica Neue, sans-serif",
+                          }}
+                        >
+                          {contentWithAnswerFunc(idx).map((item, index) => {
+                            return (
+                              <>
+                                {item}
+                                {index + 1 !==
+                                  contentWithAnswerFunc(idx).length && (
+                                  <span
+                                    style={{
+                                      border: "2px solid #43cbff",
+                                      padding: "0px",
+                                      margin: "10px 10px",
+                                    }}
+                                  >
+                                    {answers[index] ?? ""}
+                                  </span>
+                                )}
+                              </>
+                            );
+                          })}
+                        </p>
+                      ) : (
+                        <Typography>{item}</Typography>
+                      )
+                    ) : idx % 2 === 0 ? (
+                      <Typography
+                        style={{
+                          fontSize: 18,
+                        }}
+                      >
+                        {item}
+                      </Typography>
+                    ) : (
+                      <p
+                        style={{
+                          whiteSpace: "break-spaces",
+                          backgroundColor: "#2f3152",
+                          color: "#fff",
+                          fontSize: 18,
+                          padding: "10px 20px",
+                          borderRadius: 4,
+                          fontFamily:
+                            "Menlo, Monaco, Consolas, FibraOne-Regular, Gotham Rounded A, Gotham Rounded B, Segoe UI, Roboto, Oxygen, Ubuntu, Droid Sans, Helvetica Neue, sans-serif",
+                        }}
+                      >
+                        {contentWithAnswerFunc(idx).map((item, index) => {
+                          return (
+                            <>
+                              {item}
+                              {index + 1 !==
+                                contentWithAnswerFunc(idx).length && (
+                                <span
+                                  style={{
+                                    border: "1px solid cyan",
+                                    padding: "0px 10px",
+                                    borderRadius: 4,
+                                  }}
+                                >
+                                  {answers[index] ?? ""}
+                                </span>
+                              )}
+                            </>
+                          );
+                        })}
+                      </p>
+                    )
+                  )
+                )}
                 {Array.from(
                   (dataContent?.content?.option
                     ? dataContent?.content?.option?.split(",")
@@ -597,7 +727,7 @@ export default function Dashboard() {
                           : undefined,
                     }}
                   >
-                    {texting()}
+                    {finish ? "Finish" : texting()}
                   </Button>
                 </div>
               )}
@@ -895,7 +1025,7 @@ export default function Dashboard() {
                       backgroundColor: !isAnswerTrue ? "#f44336" : undefined,
                     }}
                   >
-                    {textingPuzzle()}
+                    {finish ? "Finish" : textingPuzzle()}
                   </Button>
                 </div>
               </>
@@ -1207,7 +1337,7 @@ export default function Dashboard() {
                       backgroundColor: !isAnswerTrue ? "#f44336" : undefined,
                     }}
                   >
-                    {textingPuzzleInput()}
+                    {finish ? "Finish" : textingPuzzleInput()}
                   </Button>
                 </div>
               </>
@@ -1281,6 +1411,35 @@ export default function Dashboard() {
                         </div>
                       ))}
                   </Typography>
+                  {String(dataContent?.content?.correction || "")
+                    .split(",")
+                    .filter(
+                      (i, idx) =>
+                        answer.trim() === correctAnswer.trim() ||
+                        answerResult.includes(i.split("||")[1])
+                    ).length ===
+                    String(dataContent?.content?.correction || "").split(",")
+                      .length && (
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => {
+                        handleSubmit();
+                      }}
+                      style={{
+                        borderRadius: 24,
+                        boxShadow: "0px 0px 0px #000",
+                        border: 0,
+                        letterSpacing: 2,
+                        fontSize: 16,
+                        padding: "10px 40px",
+                        fontWeight: "bold",
+                        // backgroundColor: !isAnswerTrue ? "#f44336" : undefined,
+                      }}
+                    >
+                      {finish ? "Finish" : "Continue"}
+                    </Button>
+                  )}
                 </div>
               )}
             </div>
@@ -1616,7 +1775,7 @@ export default function Dashboard() {
                         : undefined,
                     }}
                   >
-                    {textingOrdering()}
+                    {finish ? "Finish" : textingOrdering()}
                   </Button>
                 </div>
               </>
@@ -1743,7 +1902,7 @@ export default function Dashboard() {
                       fontWeight: "bold",
                     }}
                   >
-                    {textingTodo()}
+                    {finish ? "Finish" : textingTodo()}
                   </Button>
                 </div>
               </>
@@ -1831,6 +1990,74 @@ export default function Dashboard() {
         );
     }
   };
+
+  if (finishScreen && !retry) {
+    return (
+      <Container component="main" maxWidth="xs">
+        <div className={classes.paperSuccess}>
+          <img
+            src="https://cdn.dribbble.com/users/1751799/screenshots/5512482/check02.gif"
+            alt="success"
+            // loop
+            style={{ height: 300 }}
+          />
+          <Typography
+            style={{
+              fontWeight: "bold",
+              color: "#62d76b",
+              fontSize: 32,
+            }}
+          >
+            You are finished!
+          </Typography>
+          <Typography
+            style={{
+              textAlign: "center",
+              fontSize: 16,
+            }}
+          >
+            {`Anda telah menyelesaikan
+            ${data?.lesson?.name}`}
+          </Typography>
+          <Button
+            color="primary"
+            onClick={() => {
+              setFinishScreen(false);
+              setRetry(true);
+            }}
+            style={{
+              borderRadius: 24,
+              boxShadow: "0px 0px 0px #000",
+              letterSpacing: 2,
+              fontSize: 16,
+              padding: "10px 40px",
+              fontWeight: "bold",
+              marginTop: 15,
+            }}
+          >
+            Coba Lagi
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => router.push("/lesson")}
+            style={{
+              borderRadius: 24,
+              boxShadow: "0px 0px 0px #000",
+              border: 0,
+              letterSpacing: 2,
+              fontSize: 16,
+              padding: "10px 40px",
+              fontWeight: "bold",
+              marginTop: 10,
+            }}
+          >
+            Kembali ke beranda
+          </Button>
+        </div>
+      </Container>
+    );
+  }
 
   return (
     <div className={classes.root}>
@@ -1936,16 +2163,37 @@ export default function Dashboard() {
               }}
               style={{ whiteSpace: "break-spaces", padding: "0px 16px" }}
             />
-            {/* <ListItem style={{ marginBottom: 10 }}>
-              <ListItemText
-                primary={dataContent?.content?.content}
-                primaryTypographyProps={{
-                  style: {
-                    whiteSpace: "break-spaces",
-                  },
-                }}
-              />
-            </ListItem> */}
+            {timeLeft && (
+              <Card className={classes.cardRoot}>
+                <CardContent>
+                  <Typography color="textSecondary" gutterBottom>
+                    Time Left
+                  </Typography>
+                  <Countdown
+                    date={timeLeft}
+                    onComplete={handleSubmit}
+                    renderer={({ hours, minutes, seconds, completed }) => (
+                      <span>
+                        {hours}:{minutes}:{seconds}
+                      </span>
+                    )}
+                  />
+                </CardContent>
+              </Card>
+            )}
+            <Card className={classes.cardRoot}>
+              <CardContent>
+                <Typography color="textSecondary" gutterBottom>
+                  Additional information
+                </Typography>
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: dataContent?.content?.instruction,
+                  }}
+                  style={{ fontSize: 14, flex: 1 }}
+                />
+              </CardContent>
+            </Card>
           </>
         ) : (
           <>
@@ -2000,8 +2248,8 @@ export default function Dashboard() {
             <Grid
               item
               xs={12}
-              md={dataContent?.content?.contentType === "CODE" ? 12 : 8}
-              lg={dataContent?.content?.contentType === "CODE" ? 12 : 6}
+              md={dataContent?.content?.contentType === "CODE" ? 12 : 12}
+              lg={dataContent?.content?.contentType === "CODE" ? 12 : 10}
               style={{}}
             >
               {renderContent(dataContent?.content?.contentType)}
@@ -2009,47 +2257,49 @@ export default function Dashboard() {
           </Grid>
         </Container>
       </main>
-      <Drawer
-        anchor={"right"}
-        variant="permanent"
-        classes={{
-          paper: clsx(classes.drawerPaperRight),
-        }}
-        open
-      >
-        <div className={classes.toolbarIcon} />
-        {timeLeft && (
+      {dataContent?.content?.contentType !== "CODE" && (
+        <Drawer
+          anchor={"right"}
+          variant="permanent"
+          classes={{
+            paper: clsx(classes.drawerPaperRight),
+          }}
+          open
+        >
+          <div className={classes.toolbarIcon} />
+          {timeLeft && (
+            <Card className={classes.cardRoot}>
+              <CardContent>
+                <Typography color="textSecondary" gutterBottom>
+                  Time Left
+                </Typography>
+                <Countdown
+                  date={timeLeft}
+                  onComplete={handleSubmit}
+                  renderer={({ hours, minutes, seconds, completed }) => (
+                    <span>
+                      {hours}:{minutes}:{seconds}
+                    </span>
+                  )}
+                />
+              </CardContent>
+            </Card>
+          )}{" "}
           <Card className={classes.cardRoot}>
             <CardContent>
               <Typography color="textSecondary" gutterBottom>
-                Time Left
+                Additional information
               </Typography>
-              <Countdown
-                date={timeLeft}
-                onComplete={handleSubmit}
-                renderer={({ hours, minutes, seconds, completed }) => (
-                  <span>
-                    {hours}:{minutes}:{seconds}
-                  </span>
-                )}
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: dataContent?.content?.instruction,
+                }}
+                style={{ fontSize: 14, flex: 1 }}
               />
             </CardContent>
           </Card>
-        )}
-        <Card className={classes.cardRoot}>
-          <CardContent>
-            <Typography color="textSecondary" gutterBottom>
-              Additional information
-            </Typography>
-            <div
-              dangerouslySetInnerHTML={{
-                __html: dataContent?.content?.instruction,
-              }}
-              style={{ fontSize: 14, flex: 1 }}
-            />
-          </CardContent>
-        </Card>
-      </Drawer>
+        </Drawer>
+      )}
     </div>
   );
 }

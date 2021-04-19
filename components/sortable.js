@@ -1,9 +1,10 @@
 import React, { Component } from "react";
 import { sortableContainer, sortableElement } from "react-sortable-hoc";
 import arrayMove from "array-move";
+import ReorderIcon from "@material-ui/icons/Reorder";
 
 const SortableItem = sortableElement(({ value }) => (
-  <li className="custom-li">{value}</li>
+  <li className="custom-li"><span>{value}</span><ReorderIcon /></li>
 ));
 
 const SortableContainer = sortableContainer(({ children }) => {
