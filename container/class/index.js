@@ -4,10 +4,12 @@ import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
 import Button from "@material-ui/core/Button";
 import Grid from "@material-ui/core/Grid";
+import { Container } from "@material-ui/core";
 
 import { Logo, Avatar } from "public/icon/icon";
 import ClassContainer from "./ClassContainer";
-import { Container } from "@material-ui/core";
+
+import useClasses from "hooks/useClasse";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -32,6 +34,8 @@ const useStyles = makeStyles((theme) => ({
 
 function index() {
   const classes = useStyles();
+
+  const { classes: kelas } = useClasses();
 
   return (
     <div className={classes.root}>
@@ -59,7 +63,7 @@ function index() {
         </Toolbar>
       </AppBar>
       <Container maxWidth="md" className={classes.container}>
-        <ClassContainer />
+        {kelas?.data && <ClassContainer data={kelas?.data?.classes} />}
       </Container>
     </div>
   );

@@ -17,6 +17,14 @@ import NLink from "next/link";
 import { LESSONS } from "../../gql";
 import { useQuery } from "@apollo/client";
 import { LinearProgress } from "@material-ui/core";
+import { useRouter } from "next/router";
+
+import { Logo, Avatar } from "public/icon/icon";
+import Lesson from "container/lesson/index";
+
+import useCourses from "hooks/useCourses";
+import useSections from "hooks/useSections";
+import usePaths from "hooks/usePaths";
 
 function Copyright() {
   return (
@@ -34,6 +42,17 @@ function Copyright() {
 const useStyles = makeStyles((theme) => ({
   icon: {
     marginRight: theme.spacing(2),
+  },
+  appBar: {
+    background: "#fff",
+    color: "black",
+    zIndex: 999,
+    padding: "0 200px",
+    boxShadow: "none",
+    borderBottom: "1px solid #D7E2EA",
+  },
+  logo: {
+    fontSize: "3.5rem",
   },
   heroContent: {
     backgroundColor: theme.palette.background.paper,
@@ -66,8 +85,12 @@ const useStyles = makeStyles((theme) => ({
   },
   cardContent: {},
   footer: {
-    backgroundColor: theme.palette.background.paper,
+    // backgroundColor: theme.palette.background.paper,
     padding: theme.spacing(6),
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
 }));
 
@@ -75,21 +98,73 @@ const cards = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 export default function Album() {
   const classes = useStyles();
+  const router = useRouter();
   const { loading, error, data } = useQuery(LESSONS);
 
+  const { pathId } = router.query;
+
+  const name = "CSS";
+
+  const { findCourse } = useCourses({
+    filter: {
+      skip: !name,
+      variables: {
+        name: name,
+      },
+    },
+  });
+
+  const { filterSections } = useSections({
+    filter: {
+      skip: !name,
+      variables: {
+        query: {
+          pathsId: pathId,
+        },
+        // userAnswersFilter: {
+        //   userId: "606dad6b9e47480040d73796",
+        // },
+      },
+    },
+  });
+
+  const { getPaths } = usePaths();
+
   return (
-    <React.Fragment>
+    <div style={{ background: "#FAFBFC", height: "100vh" }}>
       <CssBaseline />
-      <AppBar position="relative">
+      <AppBar position="relative" className={classes.appBar}>
         <Toolbar>
-          <Typography variant="h6" color="inherit" noWrap>
-            Code Clazz
-          </Typography>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              width: "100%",
+              height: 72,
+            }}
+          >
+            <Grid container justify="space-between" alignItems="center">
+              <Grid item>
+                <Logo className={classes.logo} />
+              </Grid>
+
+              <Grid item>
+                <Avatar style={{ fontSize: "2rem" }} />
+              </Grid>
+            </Grid>
+          </div>
         </Toolbar>
       </AppBar>
-      <main>
-        <Container className={classes.cardGrid} maxWidth="lg">
-          {/* End hero unit */}
+      {/* <main style={{ background: "#FAFBFC" }}> */}
+      <Container maxWidth="md">
+        <Lesson
+          data={filterSections.data}
+          paths={getPaths.data}
+          pathId={pathId}
+        />
+      </Container>
+      {/* <Container className={classes.cardGrid} maxWidth="lg">
           <Grid container spacing={4}>
             {Array.from(data?.lessonsConnection?.data || []).map((lesson) => {
               const currContent = Array.from(lesson?.userAnswers || []).length;
@@ -128,13 +203,13 @@ export default function Album() {
               );
             })}
           </Grid>
-        </Container>
-      </main>
+        </Container> */}
+      {/* </main> */}
       {/* Footer */}
       <footer className={classes.footer}>
         <Copyright />
       </footer>
       {/* End footer */}
-    </React.Fragment>
+    </div>
   );
 }

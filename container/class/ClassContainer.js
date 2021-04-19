@@ -4,6 +4,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import Box from "@material-ui/core/Box";
 import Typography from "@material-ui/core/Typography";
 import Chip from "@material-ui/core/Chip";
+import { useRouter } from "next/router";
 
 import { Graduate, UserTie } from "public/icon/icon";
 
@@ -54,12 +55,27 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function ClassContainer() {
+function ClassContainer(props) {
+  const { data } = props;
+  const router = useRouter();
+
   const classes = useStyles();
+
+  const getIcon = (name) => {
+    switch (name) {
+      case "Kelas Dasar":
+        return <Graduate style={{ marginRight: 10 }} />;
+      case "Kelas Atas":
+        return <UserTie style={{ marginRight: 10 }} />;
+      default:
+        return <Graduate style={{ marginRight: 10 }} />;
+        break;
+    }
+  };
 
   return (
     <div>
-      {dummy.map((item, idx) => (
+      {data.map((item, idx) => (
         <Grid
           container
           justify="flex-start"
@@ -76,17 +92,24 @@ function ClassContainer() {
             >
               <div style={{ maxWidth: 424 }}>
                 <Box style={{ display: "flex", alignItems: "center" }}>
-                  <Graduate style={{ marginRight: 10 }} />
+                  {getIcon(item.name)}
                   <Typography className={classes.titleCard}>
-                    {item.class}
+                    {item.name}
                   </Typography>
                 </Box>
-                <Typography className={classes.subtitleCard}>
-                  {item.desc}
-                </Typography>
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: item.desc,
+                  }}
+                  className={classes.subtitleCard}
+                />
               </div>
               <div>
-                <img src={item.img} alt="card1" />
+                <img
+                  src={item.thumbnail}
+                  alt="card1"
+                  style={{ maxHeight: 235, width: "auto" }}
+                />
               </div>
             </div>
           </Grid>
@@ -108,20 +131,42 @@ function ClassContainer() {
                   justifyContent: "flex-start",
                 }}
               >
-                {item.content.map((value) => (
-                  <div style={{ padding: 6, cursor: "pointer" }}>
-                    <img src={value.img} alt="card1" />
-                    <div style={{ padding: 6 }}>
+                {item.paths.map((value) => (
+                  <div
+                    style={{
+                      padding: 6,
+                      cursor: "pointer",
+                      maxHeight: 235,
+                      maxWidth: 200,
+                      margin: "0 5px",
+                    }}
+                    onClick={() => router.push(`/lesson?pathId=${value.id}`)}
+                  >
+                    <img
+                      src={value.thumbnail}
+                      alt="card1"
+                      style={{
+                        maxWidth: 188,
+                        maxHeight: 138,
+                        height: 138,
+                        borderRadius: 4,
+                        marginBottom: 8,
+                      }}
+                    />
+                    <div style={{ padding: "0 6px" }}>
                       <Typography
                         style={{
                           color: "#080522",
                           fontWeight: 500,
                           fontSize: 14,
                           fontFamily: "Poppins",
+                          marginBottom: 5,
                         }}
                       >
-                        {value.title}
+                        {value.name}
                       </Typography>
+                    </div>
+                    <div style={{ padding: "0 6px" }}>
                       <Typography
                         style={{
                           color: "#FF4450",
@@ -133,13 +178,13 @@ function ClassContainer() {
                         Rp500.000{" "}
                         <span className={classes.span}>Rp1.000.000</span>
                       </Typography>
-                      {value.disarankan === true ? (
+                      {/* {value.disarankan === true ? (
                         <Chip
                           size="small"
                           label="Disarankan"
                           className={classes.chip}
                         />
-                      ) : null}
+                      ) : null} */}
                     </div>
                   </div>
                 ))}
@@ -151,68 +196,5 @@ function ClassContainer() {
     </div>
   );
 }
-
-const dummy = [
-  {
-    icon: <Graduate />,
-    class: "Kelas Basic",
-    desc:
-      "Kelas ini cocok untuk kamu yang masih dalam jenjang pendidikan baik SD, SMP atau SMA/SMK bahkan masih kuliah, yang sedang ingin mengenal bahkan mendalami tentang pemrograman.",
-    img: "/class/card1-1.png",
-    content: [
-      {
-        img: "/class/card2-1.png",
-        title: "Web Development Basic",
-        price: 1000000,
-        diskon: 0.5,
-        disarankan: true,
-      },
-      {
-        img: "/class/card2-2.png",
-        title: "Server Management Basic",
-        price: 1000000,
-        diskon: 0.5,
-        disarankan: false,
-      },
-    ],
-  },
-  {
-    icon: <UserTie />,
-    class: "Kelas Profesional",
-    desc:
-      "Kelas ini cocok untuk kamu yang sudah lulus SMA/SMK atau kuliah dan mau langsung mau disalurkan kerja setelah selasai kelas. Jika ada yang perlu ditanyakan, mimin 24jam setiap menjawab.",
-    img: "/class/2card1-2.png",
-    content: [
-      {
-        img: "/class/2card2-1.png",
-        title: "Fullstack Developer",
-        price: 0,
-        diskon: 0,
-        disarankan: true,
-      },
-      {
-        img: "/class/2card2-2.png",
-        title: "Frontend Developer",
-        price: 0,
-        diskon: 0,
-        disarankan: false,
-      },
-      {
-        img: "/class/2card2-3.png",
-        title: "Backend Developer",
-        price: 0,
-        diskon: 0,
-        disarankan: false,
-      },
-      {
-        img: "/class/2card2-4.png",
-        title: "Devops Engineer",
-        price: 0,
-        diskon: 0,
-        disarankan: false,
-      },
-    ],
-  },
-];
 
 export default ClassContainer;
