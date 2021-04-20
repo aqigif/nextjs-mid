@@ -104,11 +104,13 @@ export default function Album() {
 
   const userId = "606dad6b9e47480040d73796";
 
+  const sections = courseId ? [{ coursesId: courseId }] : [{ pathsId: pathId }];
+
   const { filterSections, continueLearning, filterCourse } = useSections({
     filter: {
       skip: !pathId,
       variables: {
-        or: [{ pathsId: pathId }, { coursesId: courseId }],
+        or: sections,
         // userAnswersFilter: {
         //   userId: "606dad6b9e47480040d73796",
         // },
@@ -137,7 +139,7 @@ export default function Album() {
 
   const { getPaths } = usePaths();
 
-  console.log(continueLearning);
+  console.log(filterSections);
 
   return (
     <div style={{ background: "#FAFBFC" }}>
