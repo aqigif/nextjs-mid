@@ -87,7 +87,6 @@ const useStyles = makeStyles((theme) => ({
   footer: {
     // backgroundColor: theme.palette.background.paper,
     padding: theme.spacing(6),
-    position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
@@ -101,34 +100,46 @@ export default function Album() {
   const router = useRouter();
   const { loading, error, data } = useQuery(LESSONS);
 
-  const { pathId } = router.query;
+  const { pathId, courseId } = router.query;
 
-  const name = "CSS";
+  const userId = "606dad6b9e47480040d73796";
 
-  const { findCourse } = useCourses({
+  const sections = courseId ? [{ coursesId: courseId }] : [{ pathsId: pathId }];
+
+  const { filterSections, continueLearning, filterCourse } = useSections({
     filter: {
-      skip: !name,
+      skip: !pathId,
       variables: {
-        name: name,
-      },
-    },
-  });
-
-  const { filterSections } = useSections({
-    filter: {
-      skip: !name,
-      variables: {
-        query: {
-          pathsId: pathId,
-        },
+        or: sections,
         // userAnswersFilter: {
         //   userId: "606dad6b9e47480040d73796",
         // },
       },
     },
+    continue: {
+      skip: !userId,
+      variables: {
+        orderBy: "updatedAt_DESC",
+        where: {
+          userId: userId,
+        },
+      },
+    },
+    courses: {
+      skip: !userId,
+      variables: {
+        query: {
+          sections: {
+            pathsId: pathId,
+          },
+        },
+      },
+    },
   });
 
   const { getPaths } = usePaths();
+
+  console.log(filterSections);
 
   return (
     <div style={{ background: "#FAFBFC" }}>
@@ -173,6 +184,8 @@ export default function Album() {
           data={filterSections.data}
           paths={getPaths.data}
           pathId={pathId}
+          continueLearn={continueLearning.data}
+          courses={filterCourse.data}
         />
       </Container>
       {/* <Container className={classes.cardGrid} maxWidth="lg">
