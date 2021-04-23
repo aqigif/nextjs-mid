@@ -26,19 +26,6 @@ import useCourses from "hooks/useCourses";
 import useSections from "hooks/useSections";
 import usePaths from "hooks/usePaths";
 
-function Copyright() {
-  return (
-    <Typography variant="body2" color="textSecondary" align="center">
-      {"Copyright © "}
-      <Link color="inherit" href="https://material-ui.com/">
-        CodeClazz
-      </Link>{" "}
-      {new Date().getFullYear()}
-      {"."}
-    </Typography>
-  );
-}
-
 const useStyles = makeStyles((theme) => ({
   icon: {
     marginRight: theme.spacing(2),
@@ -236,9 +223,6 @@ export default function Album() {
         </Container> */}
       {/* </main> */}
       {/* Footer */}
-      <footer className={classes.footer}>
-        <Copyright />
-      </footer>
       {/* End footer */}
     </div>
   );

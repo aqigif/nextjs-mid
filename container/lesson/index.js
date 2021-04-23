@@ -278,13 +278,13 @@ function index(props) {
                     sm={12}
                     md={12}
                   >
-                    <Icon classes={{ root: classes.iconRoot }}>
+                    {item?.thumbnail && <Icon classes={{ root: classes.iconRoot }}>
                       <img
                         className={classes.imageIcon}
                         src={item.thumbnail}
                         alt="Image title"
                       />
-                    </Icon>
+                    </Icon>}
 
                     <Typography className={classes.title}>
                       {item.name}
