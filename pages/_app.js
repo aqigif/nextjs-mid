@@ -24,7 +24,66 @@ export default function MyApp(props) {
   return (
     <React.Fragment>
       <Head>
-        <title>codeclazz</title>
+        {/* <!-- Primary Meta Tags --> */}
+        <title>CodeClazz | Mengenal Dunia Coding Sejak Dini</title>
+        <link
+          rel="apple-touch-icon"
+          sizes="180x180"
+          href="/favicons/apple-touch-icon.png"
+        />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="32x32"
+          href="/favicons/favicon-32x32.png"
+        />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="16x16"
+          href="/favicons/favicon-16x16.png"
+        />
+        <link rel="manifest" href="/favicons/site.webmanifest" />
+        <meta
+          name="title"
+          content="CodeClazz | Mengenal Dunia Coding Sejak Dini"
+        />
+        <meta
+          name="description"
+          content="CodeClazz - Mengenal Dunia Coding Sejak Dini | Mulai belajar coding dan buat aplikasi pertamamu sekarang dengan kurikulum Teknologi Standar Internasional."
+        />
+
+        {/* <!-- Open Graph / Facebook --> */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://codeclazz.com/" />
+        <meta
+          property="og:title"
+          content="CodeClazz | Mengenal Dunia Coding Sejak Dini"
+        />
+        <meta
+          property="og:description"
+          content="CodeClazz - Mengenal Dunia Coding Sejak Dini | Mulai belajar coding dan buat aplikasi pertamamu sekarang dengan kurikulum Teknologi Standar Internasional."
+        />
+        <meta
+          property="og:image"
+          content="https://metatags.io/assets/meta-tags-16a33a6a8531e519cc0936fbba0ad904e52d35f34a46c97a2c9f6f7dd7d336f2.png"
+        />
+
+        {/* <!-- Twitter --> */}
+        <meta property="twitter:card" content="summary_large_image" />
+        <meta property="twitter:url" content="https://codeclazz.com/" />
+        <meta
+          property="twitter:title"
+          content="CodeClazz | Mengenal Dunia Coding Sejak Dini"
+        />
+        <meta
+          property="twitter:description"
+          content="CodeClazz - Mengenal Dunia Coding Sejak Dini | Mulai belajar coding dan buat aplikasi pertamamu sekarang dengan kurikulum Teknologi Standar Internasional."
+        />
+        <meta
+          property="twitter:image"
+          content="https://metatags.io/assets/meta-tags-16a33a6a8531e519cc0936fbba0ad904e52d35f34a46c97a2c9f6f7dd7d336f2.png"
+        />
         <meta
           name="viewport"
           content="minimum-scale=1, initial-scale=1, width=device-width"

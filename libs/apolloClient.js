@@ -3,6 +3,7 @@ import { ApolloClient, HttpLink, InMemoryCache, split } from "@apollo/client";
 import { WebSocketLink } from "@apollo/client/link/ws";
 import { getMainDefinition } from "@apollo/client/utilities";
 import { SubscriptionClient } from "subscriptions-transport-ws";
+import { setContext } from '@apollo/client/link/context';
 
 // const wsLink = new SubscriptionClient("ws://dev-codeclazznfzg7.microgen.id/graphql", {
 //   reconnect: true,
@@ -18,6 +19,18 @@ const httpLink = new HttpLink({
   uri: "https://dev-codeclazznfzg7.microgen.id/graphql",
 });
 
+
+const authLink = setContext((_, { headers }) => {
+  // get the authentication token from local storage if it exists
+  const token = localStorage.getItem('token');
+  // return the headers to the context so httpLink can read them
+  return {
+    headers: {
+      ...headers,
+      authorization: token ? `Bearer ${token}` : "",
+    }
+  }
+});
 // const splitLink = split(
 //   ({ query }) => {
 //     const definition = getMainDefinition(query);
@@ -35,7 +48,7 @@ let apolloClient;
 function createApolloClient() {
   return new ApolloClient({
     ssrMode: typeof window === "undefined", // set to true for SSR
-    link: httpLink,
+    link: authLink.concat(httpLink),
     cache: new InMemoryCache(),
   });
 }
